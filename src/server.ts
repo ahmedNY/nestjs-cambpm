@@ -30,18 +30,16 @@ export class ExternalTaskConnector extends Server
   protected init(): void {
     this.client.start();
 
-    Logger.log('External Task Client started', 'ExternalTaskConnector')
+    Logger.log('External Task Client started', 'CamundaTaskConnector');
 
     const handlers = this.getHandlers();
+    /* istanbul ignore next */
     handlers.forEach((messageHandler: MessageHandler, key: string) => {
-      let jsonKey = JSON.parse(key);
-      this.client.subscribe(
-        jsonKey.topic,
-        jsonKey.options,
-        ({ task, taskService }) => {
-          messageHandler(task, taskService);
-        },
-      );
+      const { topic, options } = JSON.parse(key);
+
+      this.client.subscribe(topic, options, async ({ task, taskService }) => {
+        await messageHandler(task, taskService);
+      });
     });
   }
 }
